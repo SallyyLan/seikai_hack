@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Session Summary - LAST MINUTE Exam Prep AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .urgent-gradient {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24, #ff3838);
+        }
+        .urgent-shadow {
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+        .correct-answer {
+            border-left-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        .incorrect-answer {
+            border-left-color: #ef4444;
+            background-color: #fef2f2;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="urgent-gradient text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-2">📊 Exam Session Summary</h1>
+            <p class="text-xl opacity-90">{{ session.course_name }} - {{ session.exam_date }}</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Session Overview -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📋 Session Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600">{{ questions|length }}</div>
+                        <div class="text-gray-600">Questions Analyzed</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">
+                            {{ questions|selectattr('is_correct', 'equalto', true)|list|length }}
+                        </div>
+                        <div class="text-gray-600">Correct Answers</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-600">{{ priorities|length }}</div>
+                        <div class="text-gray-600">Topics Identified</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priority Queue -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 Study Priorities</h2>
+                <div class="space-y-4">
+                    {% for topic in priorities %}
+                    <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-red-500">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg text-gray-800">{{ topic.name }}</h3>
+                                <p class="text-gray-600 text-sm">{{ topic.study_recommendation }}</p>
+                                <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                                    <span>Attempted: {{ topic.questions_attempted }}</span>
+                                    <span>Correct: {{ topic.questions_correct }}</span>
+                                    <span>Success Rate: {{ "%.1f"|format(topic.questions_correct / topic.questions_attempted * 100 if topic.questions_attempted > 0 else 0) }}%</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-red-600">#{{ loop.index }}</div>
+                                <div class="text-sm text-gray-500">Priority</div>
+                                <div class="text-xs text-gray-400">Score: {{ "%.2f"|format(topic.priority_score) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Question Analysis -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🔍 Question Analysis</h2>
+                <div class="space-y-6">
+                    {% for question in questions %}
+                    <div class="border rounded-lg p-4 {% if question.is_correct %}correct-answer{% else %}incorrect-answer{% endif %}">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-lg text-gray-800">Question {{ loop.index }}</h3>
+                            <div class="flex items-center space-x-2">
+                                {% if question.is_correct %}
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">✓ Correct</span>
+                                {% else %}
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-medium">✗ Incorrect</span>
+                                {% endif %}
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                                    {{ "%.0f"|format(question.confidence * 100) }}% Confidence
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-700 mb-2">Your Work:</h4>
+                            {% if question.filename %}
+                            <div class="mb-2 text-sm text-gray-600">
+                                <span class="font-medium">File:</span> {{ question.filename }}
+                                {% if question.file_type %}
+                                <span class="ml-2 px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">{{ question.file_type }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <div class="bg-gray-100 p-3 rounded text-sm font-mono">{{ question.extracted_text[:200] }}{% if question.extracted_text|length > 200 %}...{% endif %}</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-700 mb-2">AI Feedback:</h4>
+                            <p class="text-gray-700">{{ question.feedback }}</p>
+                        </div>
+                        
+                        {% if question.topics %}
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-700 mb-2">Topics Covered:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for topic in question.topics %}
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm">{{ topic }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="text-xs text-gray-500">
+                            Analyzed at: {{ question.created_at.strftime('%Y-%m-%d %H:%M') if question.created_at else 'Unknown' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Study Recommendations -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📚 Study Recommendations</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">🚨 High Priority (Focus Now!)</h3>
+                        <div class="space-y-2">
+                            {% for topic in priorities[:3] %}
+                            <div class="bg-red-50 border-l-4 border-red-500 p-3">
+                                <h4 class="font-medium text-red-800">{{ topic.name }}</h4>
+                                <p class="text-sm text-red-600">{{ topic.study_recommendation }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">📖 Medium Priority (Review Soon)</h3>
+                        <div class="space-y-2">
+                            {% for topic in priorities[3:6] %}
+                            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3">
+                                <h4 class="font-medium text-yellow-800">{{ topic.name }}</h4>
+                                <p class="text-sm text-yellow-600">{{ topic.study_recommendation }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center space-y-4">
+                <a href="/" class="inline-block bg-blue-600 text-white py-3 px-8 rounded-md font-semibold hover:bg-blue-700 transition-colors">
+                    🏠 Back to Home
+                </a>
+                <button onclick="window.print()" class="inline-block bg-green-600 text-white py-3 px-8 rounded-md font-semibold hover:bg-green-700 transition-colors ml-4">
+                    🖨️ Print Report
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-300">Good luck on your exam! You've got this! 💪🎯</p>
+        </div>
+    </footer>
+
+    <script>
+        // Add any interactive features here
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlight the highest priority topic
+            const firstPriority = document.querySelector('.border-l-4.border-red-500');
+            if (firstPriority) {
+                firstPriority.classList.add('ring-2', 'ring-red-300');
+            }
+        });
+    </script>
+</body>
+</html>
