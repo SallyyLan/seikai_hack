@@ -3,292 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAST MINUTE Exam Prep AI</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        .urgent-gradient {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24, #ff3838);
-        }
-        .urgent-shadow {
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
-        }
-        .pulse-urgent {
-            animation: pulse-urgent 2s infinite;
-        }
-        @keyframes pulse-urgent {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-    </style>
+    <title>Exam Prep AI - Dual AI System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="urgent-gradient text-white py-6">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl font-bold mb-2 pulse-urgent">🚨 LAST MINUTE Exam Prep AI 🚨</h1>
-            <p class="text-xl opacity-90">Get instant feedback on your practice work and prioritize what to study!</p>
-        </div>
-    </header>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-blue-600 mb-8">📚 Exam Prep AI</h1>
+        <p class="text-center text-gray-600 mb-8">Dual AI System: Gemini for LaTeX extraction + GPT-OSS for validation & practice generation</p>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Quick Start Section -->
-        <div class="max-w-4xl mx-auto">
-            <!-- Step 1: Start Exam Session -->
-            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 Step 1: Start Your Exam Session</h2>
-                <form id="startExamForm" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Course Name</label>
-                            <input type="text" name="course_name" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                   placeholder="e.g., Calculus II, Physics 101">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Exam Date</label>
-                            <input type="date" name="exam_date" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-                        </div>
-                    </div>
-                    <button type="submit" 
-                            class="w-full bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors">
-                        🚀 START EXAM SESSION
-                    </button>
-                </form>
-            </div>
-
-            <!-- Step 2: Upload Materials (Hidden until session starts) -->
-            <div id="uploadMaterialsSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">📚 Step 2: Upload Course Materials</h2>
-                <p class="text-gray-600 mb-4">Upload your course materials to help AI understand what you're studying</p>
-                
-                <form id="uploadMaterialsForm" class="space-y-4">
-                    <input type="hidden" id="sessionId" name="session_id">
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📖 Textbook</label>
-                            <input type="file" name="textbook" accept=".pdf,.doc,.docx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📊 Lecture Slides</label>
-                            <input type="file" name="slides" accept=".pdf,.ppt,.pptx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📝 Homework</label>
-                            <input type="file" name="homework" accept=".pdf,.doc,.docx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📋 Past Exams</label>
-                            <input type="file" name="past_exams" accept=".pdf,.doc,.docx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">📋 Syllabus</label>
-                        <input type="file" name="syllabus" accept=".pdf,.doc,.docx" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    </div>
-                    
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors">
-                        📤 UPLOAD MATERIALS
-                    </button>
-                </form>
-            </div>
-
-            <!-- Step 3: Upload Practice Work (Hidden until materials uploaded) -->
-            <div id="uploadWorkSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">✍️ Step 3: Upload Your Practice Work</h2>
-                <p class="text-gray-600 mb-4">Upload your practice work in any format and get instant AI feedback!</p>
-                
-                <form id="uploadWorkForm" class="space-y-4">
-                    <input type="hidden" name="session_id">
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">📄 Practice Work Files</label>
-                        <input type="file" name="work_files" multiple 
-                               accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.tiff,image/*" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        <p class="text-sm text-gray-500 mt-1">
-                            Supported formats: PDF documents, PNG, JPG, JPEG, GIF, BMP, WebP, TIFF images<br>
-                            📱 Take photos of handwritten work • 📄 Upload PDF practice tests • 🖼️ Screenshots of problems
-                        </p>
-                    </div>
-                    
-                    <button type="submit" 
-                            class="w-full bg-green-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-green-700 transition-colors">
-                        🔍 ANALYZE MY WORK
-                    </button>
-                </form>
-            </div>
-
-            <!-- Results Section (Hidden until work is analyzed) -->
-            <div id="resultsSection" class="bg-white rounded-lg shadow-lg p-6 urgent-shadow hidden">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 Your Study Priorities</h2>
-                <div id="priorityQueue" class="space-y-4">
-                    <!-- Priority queue will be populated here -->
+        <!-- AI Services Status -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4">🤖 AI Services Status</h3>
+            <div id="aiStatus" class="grid grid-cols-2 gap-4">
+                <div class="text-center p-4 border rounded-lg">
+                    <div id="geminiStatus" class="w-4 h-4 bg-gray-400 rounded-full mx-auto mb-2"></div>
+                    <span class="font-medium">Gemini (PDF→LaTeX)</span>
                 </div>
-                
-                <div class="mt-6 text-center">
-                    <a href="#" id="viewFullReport" 
-                       class="inline-block bg-purple-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-purple-700 transition-colors">
-                        📊 VIEW FULL REPORT
-                    </a>
+                <div class="text-center p-4 border rounded-lg">
+                    <div id="gptOssStatus" class="w-4 h-4 bg-gray-400 rounded-full mx-auto mb-2"></div>
+                    <span class="font-medium">GPT-OSS (Validation & Practice)</span>
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-6 mt-12">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-300">Built for students who need to study smart, not just hard! 🧠⚡</p>
+        <!-- Main Workflow -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Step 1: Upload Practice Exam -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">📄 Step 1: Upload Practice Exam</h3>
+                <form id="examUploadForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload PDF Practice Exam</label>
+                        <input type="file" id="examFile" accept=".pdf" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
+                        Extract LaTeX & Analyze Topics
+                    </button>
+                </form>
+                <div id="examResult" class="mt-4 hidden"></div>
+            </div>
+
+            <!-- Step 2: Upload Student Work -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">✍️ Step 2: Upload Student Work</h3>
+                <form id="workUploadForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Session ID</label>
+                        <input type="text" id="sessionId" placeholder="Enter session ID from Step 1" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Handwritten Work (Image)</label>
+                        <input type="file" id="workFile" accept="image/*" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+                        Extract LaTeX & Validate
+                    </button>
+                </form>
+                <div id="workResult" class="mt-4 hidden"></div>
+            </div>
         </div>
-    </footer>
 
-    <!-- Loading Modal -->
-    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-            <p class="text-lg font-semibold">AI is analyzing your work...</p>
-            <p class="text-gray-600">This may take a few moments</p>
+        <!-- Step 3: Generate Practice Exam -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+            <h3 class="text-xl font-semibold mb-4">🎯 Step 3: Generate Practice Exam</h3>
+            <form id="practiceExamForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Session ID</label>
+                        <input type="text" id="practiceSessionId" placeholder="Enter session ID" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Target Topics</label>
+                        <input type="text" id="targetTopics" placeholder="e.g., calculus, algebra" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                        <select id="difficulty" class="w-full p-2 border border-gray-300 rounded-md">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">
+                    Generate Practice Exam
+                </button>
+            </form>
+            <div id="practiceExamResult" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Results Display -->
+        <div id="resultsSection" class="mt-8 hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">📊 Results & Analysis</h3>
+                <div id="resultsContent"></div>
+            </div>
+        </div>
+
+        <!-- Loading Modal -->
+        <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-lg text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-lg">Processing with AI...</p>
+                <p class="text-sm text-gray-600 mt-2">This may take a few moments</p>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentSessionId = null;
-
-        // Start Exam Session
-        document.getElementById('startExamForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            
-            try {
-                const response = await fetch('/start-exam', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                if (result.session_id) {
-                    currentSessionId = result.session_id;
-                    document.getElementById('sessionId').value = currentSessionId;
-                    document.getElementById('uploadMaterialsSection').classList.remove('hidden');
-                    
-                    // Scroll to next section
-                    document.getElementById('uploadMaterialsSection').scrollIntoView({ behavior: 'smooth' });
-                }
-            } catch (error) {
-                alert('Failed to start exam session: ' + error.message);
-            }
+        // Check AI services status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAIStatus();
         });
 
-        // Upload Materials
-        document.getElementById('uploadMaterialsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            formData.set('session_id', currentSessionId);
-            
+        async function checkAIStatus() {
             try {
-                const response = await fetch('/upload-materials', {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch('/api/status');
+                const status = await response.json();
                 
-                const result = await response.json();
-                if (result.message) {
-                    document.getElementById('uploadWorkSection').classList.remove('hidden');
-                    document.getElementById('uploadWorkSection').querySelector('input[name="session_id"]').value = currentSessionId;
-                    
-                    // Scroll to next section
-                    document.getElementById('uploadWorkSection').scrollIntoView({ behavior: 'smooth' });
-                }
+                // Update Gemini status
+                const geminiStatus = document.getElementById('geminiStatus');
+                geminiStatus.className = `w-4 h-4 rounded-full mx-auto mb-2 ${status.gemini ? 'bg-green-500' : 'bg-red-500'}`;
+                
+                // Update GPT-OSS status
+                const gptOssStatus = document.getElementById('gptOssStatus');
+                gptOssStatus.className = `w-4 h-4 rounded-full mx-auto mb-2 ${status.gpt_oss ? 'bg-green-500' : 'bg-red-500'}`;
+                
             } catch (error) {
-                alert('Failed to upload materials: ' + error.message);
-            }
-        });
-
-        // Upload Practice Work
-        document.getElementById('uploadWorkForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            formData.set('session_id', currentSessionId);
-            
-            // Show loading modal
-            document.getElementById('loadingModal').classList.remove('hidden');
-            document.getElementById('loadingModal').classList.add('flex');
-            
-            try {
-                const response = await fetch('/upload-practice-work', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                if (result.message) {
-                    // Get priority queue
-                    await loadPriorityQueue();
-                    document.getElementById('resultsSection').classList.remove('hidden');
-                    
-                    // Scroll to results
-                    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-                }
-            } catch (error) {
-                alert('Failed to analyze work: ' + error.message);
-            } finally {
-                // Hide loading modal
-                document.getElementById('loadingModal').classList.add('hidden');
-                document.getElementById('loadingModal').classList.remove('flex');
-            }
-        });
-
-        // Load Priority Queue
-        async function loadPriorityQueue() {
-            try {
-                const response = await fetch(`/get-priority-queue/${currentSessionId}`);
-                const result = await response.json();
-                
-                const priorityQueue = document.getElementById('priorityQueue');
-                priorityQueue.innerHTML = '';
-                
-                result.priorities.forEach((topic, index) => {
-                    const topicCard = document.createElement('div');
-                    topicCard.className = 'bg-gray-50 rounded-lg p-4 border-l-4 border-red-500';
-                    topicCard.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-semibold text-lg text-gray-800">${topic.name}</h3>
-                                <p class="text-gray-600 text-sm">${topic.study_recommendation}</p>
-                                <div class="mt-2 text-xs text-gray-500">
-                                    Attempted: ${topic.questions_attempted} | Correct: ${topic.questions_correct}
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-2xl font-bold text-red-600">#${index + 1}</div>
-                                <div class="text-sm text-gray-500">Priority</div>
-                            </div>
-                        </div>
-                    `;
-                    priorityQueue.appendChild(topicCard);
-                });
-            } catch (error) {
-                console.error('Failed to load priority queue:', error);
+                console.error('Failed to check AI status:', error);
             }
         }
 
-        // View Full Report
-        document.getElementById('viewFullReport').addEventListener('click', (e) => {
+        // Step 1: Upload Practice Exam
+        document.getElementById('examUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (currentSessionId) {
-                window.open(`/session/${currentSessionId}`, '_blank');
+            showLoading();
+            
+            const formData = new FormData();
+            const examFile = document.getElementById('examFile').files[0];
+            formData.append('exam_file', examFile);
+            formData.append('exam_type', 'practice_exam');
+            
+            try {
+                const response = await fetch('/api/upload-practice-exam', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayExamResult(result);
+                    // Auto-fill session ID in other forms
+                    document.getElementById('sessionId').value = result.session_id;
+                    document.getElementById('practiceSessionId').value = result.session_id;
+                } else {
+                    showError('Exam upload failed: ' + result.message);
+                }
+            } catch (error) {
+                showError('Upload failed: ' + error.message);
+            } finally {
+                hideLoading();
             }
         });
+
+        // Step 2: Upload Student Work
+        document.getElementById('workUploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const formData = new FormData();
+            const workFile = document.getElementById('workFile').files[0];
+            const sessionId = document.getElementById('sessionId').value;
+            
+            formData.append('work_file', workFile);
+            formData.append('session_id', sessionId);
+            
+            try {
+                const response = await fetch('/api/upload-student-work', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayWorkResult(result);
+                } else {
+                    showError('Work upload failed: ' + result.message);
+                }
+            } catch (error) {
+                showError('Upload failed: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Step 3: Generate Practice Exam
+        document.getElementById('practiceExamForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const formData = new FormData();
+            const sessionId = document.getElementById('practiceSessionId').value;
+            const targetTopics = document.getElementById('targetTopics').value;
+            const difficulty = document.getElementById('difficulty').value;
+            
+            formData.append('session_id', sessionId);
+            formData.append('target_topics', targetTopics);
+            formData.append('difficulty', difficulty);
+            
+            try {
+                const response = await fetch('/api/generate-practice-exam', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayPracticeExamResult(result);
+                } else {
+                    showError('Practice exam generation failed: ' + result.message);
+                }
+            } catch (error) {
+                showError('Generation failed: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        function displayExamResult(result) {
+            const resultDiv = document.getElementById('examResult');
+            resultDiv.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-md';
+            resultDiv.innerHTML = `
+                <h4 class="font-semibold text-green-800 mb-2">✅ Practice Exam Processed Successfully</h4>
+                <p class="text-sm text-green-700 mb-2">Session ID: <code class="bg-green-100 px-2 py-1 rounded">${result.session_id}</code></p>
+                <p class="text-sm text-green-700 mb-2">Topics Found: ${result.topics.topics ? result.topics.topics.length : 0}</p>
+                <details class="mt-2">
+                    <summary class="cursor-pointer text-sm font-medium text-green-800">View LaTeX Code</summary>
+                    <pre class="mt-2 text-xs bg-white p-2 border rounded overflow-x-auto">${result.latex_code}</pre>
+                </details>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        function displayWorkResult(result) {
+            const resultDiv = document.getElementById('workResult');
+            resultDiv.className = 'mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md';
+            resultDiv.innerHTML = `
+                <h4 class="font-semibold text-blue-800 mb-2">✅ Student Work Processed Successfully</h4>
+                <p class="text-sm text-blue-700 mb-2">Work ID: <code class="bg-blue-100 px-2 py-1 rounded">${result.work_id}</code></p>
+                <p class="text-sm text-blue-700 mb-2">LaTeX Valid: ${result.validation.is_valid ? '✅ Yes' : '❌ No'}</p>
+                <details class="mt-2">
+                    <summary class="cursor-pointer text-sm font-medium text-blue-800">View LaTeX Code</summary>
+                    <pre class="mt-2 text-xs bg-white p-2 border rounded overflow-x-auto">${result.latex_code}</pre>
+                </details>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        function displayPracticeExamResult(result) {
+            const resultDiv = document.getElementById('practiceExamResult');
+            const practiceExam = result.practice_exam;
+            
+            resultDiv.className = 'mt-4 p-4 bg-purple-50 border border-purple-200 rounded-md';
+            resultDiv.innerHTML = `
+                <h4 class="font-semibold text-purple-800 mb-2">✅ Practice Exam Generated Successfully</h4>
+                <p class="text-sm text-purple-700 mb-2">Title: ${practiceExam.exam_title}</p>
+                <p class="text-sm text-purple-700 mb-2">Total Time: ${practiceExam.total_time}</p>
+                <p class="text-sm text-purple-700 mb-4">Questions: ${practiceExam.questions ? practiceExam.questions.length : 0}</p>
+                
+                ${practiceExam.questions ? practiceExam.questions.map((q, i) => `
+                    <div class="bg-white p-3 border rounded mb-3">
+                        <h5 class="font-medium mb-2">Question ${q.question_number}: ${q.topic}</h5>
+                        <p class="text-sm text-gray-600 mb-2">Difficulty: ${q.difficulty} | Time: ${q.estimated_time}</p>
+                        <div class="mb-2">
+                            <strong>Question:</strong>
+                            <div class="bg-gray-50 p-2 rounded text-sm font-mono">${q.question_latex}</div>
+                        </div>
+                        <details class="mt-2">
+                            <summary class="cursor-pointer text-sm font-medium text-purple-800">View Solution</summary>
+                            <div class="bg-gray-50 p-2 rounded text-sm font-mono mt-2">${q.solution_latex}</div>
+                        </details>
+                    </div>
+                `).join('') : '<p class="text-red-600">No questions generated</p>'}
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+        }
+
+        function showError(message) {
+            alert('Error: ' + message);
+        }
     </script>
 </body>
 </html>

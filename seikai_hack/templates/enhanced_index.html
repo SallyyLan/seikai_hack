@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAST MINUTE Exam Prep AI - Enhanced</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .urgent-gradient {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24, #ff3838);
+        }
+        .urgent-shadow {
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+        .pulse-urgent {
+            animation: pulse-urgent 2s infinite;
+        }
+        .ai-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+        }
+        .ai-shadow {
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        @keyframes pulse-urgent {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="urgent-gradient text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-2 pulse-urgent">🚨 LAST MINUTE Exam Prep AI 🚨</h1>
+            <p class="text-xl opacity-90">Enhanced AI-powered exam preparation with Gemini, GPT-OSS-20B, and Google Cloud AI!</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">🤖 Gemini AI</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">🧠 GPT-OSS-20B</span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">☁️ Google Cloud AI</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- AI Services Status -->
+    <div class="container mx-auto px-4 py-4">
+        <div class="bg-white rounded-lg shadow-lg p-4">
+            <h3 class="text-lg font-semibold mb-3">🤖 AI Services Status</h3>
+            <div id="aiStatus" class="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm">
+                <div class="text-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mx-auto mb-1"></div>
+                    <span>Mathpix</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mx-auto mb-1"></div>
+                    <span>GPT-4</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mx-auto mb-1"></div>
+                    <span>Gemini</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mx-auto mb-1"></div>
+                    <span>GPT-OSS-20B</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full mx-auto mb-1"></div>
+                    <span>Google Cloud</span>
+                </div>
+                <div class="text-center">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mx-auto mb-1"></div>
+                    <span>Practice Gen</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Step 1: Start Exam Session -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 Step 1: Start Your Exam Session</h2>
+                <form id="startExamForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Course Name</label>
+                            <input type="text" name="course_name" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                   placeholder="e.g., Calculus II, Physics 101">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Exam Date</label>
+                            <input type="date" name="exam_date" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
+                        </div>
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors">
+                        🚀 START EXAM SESSION
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Upload Materials -->
+            <div id="uploadMaterialsSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📚 Step 2: Upload Course Materials</h2>
+                <p class="text-gray-600 mb-4">Upload your course materials for AI-powered analysis and topic extraction</p>
+                
+                <form id="uploadMaterialsForm" class="space-y-4">
+                    <input type="hidden" id="sessionId" name="session_id">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">📖 Textbook</label>
+                            <input type="file" name="textbook" accept=".pdf,.doc,.docx" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">📊 Lecture Slides</label>
+                            <input type="file" name="slides" accept=".pdf,.ppt,.pptx" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">📝 Homework</label>
+                            <input type="file" name="homework" accept=".pdf,.doc,.docx" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">📋 Past Exams</label>
+                            <input type="file" name="past_exams" accept=".pdf,.doc,.docx" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📋 Syllabus</label>
+                        <input type="file" name="syllabus" accept=".pdf,.doc,.docx" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors">
+                        📤 UPLOAD & ANALYZE MATERIALS
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 3: Upload Practice Work -->
+            <div id="uploadWorkSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">✍️ Step 3: Upload Your Practice Work</h2>
+                <p class="text-gray-600 mb-4">Upload your practice work for enhanced AI analysis with multiple AI models</p>
+                
+                <form id="uploadWorkForm" class="space-y-4">
+                    <input type="hidden" name="session_id">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📄 Practice Work Files</label>
+                        <input type="file" name="work_files" multiple 
+                               accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.tiff,image/*" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <p class="text-sm text-gray-500 mt-1">
+                            Supported formats: PDF documents, PNG, JPG, JPEG, GIF, BMP, WebP, TIFF images<br>
+                            📱 Take photos of handwritten work • 📄 Upload PDF practice tests • 🖼️ Screenshots of problems
+                        </p>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-green-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-green-700 transition-colors">
+                        🔍 ANALYZE WITH ENHANCED AI
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 4: AI-Powered Features -->
+            <div id="aiFeaturesSection" class="hidden">
+                <!-- Priority Queue -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 Your Study Priorities</h2>
+                    <div id="priorityQueue" class="space-y-4 mb-6">
+                        <!-- Priority queue will be populated here -->
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button id="generatePracticeExamBtn" 
+                                class="bg-purple-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-purple-700 transition-colors">
+                            🎓 Generate Practice Exam
+                        </button>
+                        <button id="createStudyPlanBtn" 
+                                class="bg-indigo-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-indigo-700 transition-colors">
+                            📅 Create Study Plan
+                        </button>
+                        <button id="getStepByStepHelpBtn" 
+                                class="bg-teal-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-teal-700 transition-colors">
+                            💡 Get Step-by-Step Help
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Practice Exam Generator -->
+                <div id="practiceExamSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 ai-shadow hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">🎓 AI Practice Exam Generator</h2>
+                    <form id="practiceExamForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
+                                <select name="difficulty" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Problems</label>
+                                <input type="number" name="problem_count" min="1" max="20" value="5" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" 
+                                        class="w-full bg-purple-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-purple-700 transition-colors">
+                                    🚀 Generate Practice Exam
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Study Plan Creator -->
+                <div id="studyPlanSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 ai-shadow hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">📅 AI Study Plan Creator</h2>
+                    <form id="studyPlanForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Available Study Hours</label>
+                                <input type="number" name="available_hours" min="1" max="100" value="20" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" 
+                                        class="w-full bg-indigo-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-indigo-700 transition-colors">
+                                    📋 Create Study Plan
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Step-by-Step Help -->
+                <div id="helpSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 ai-shadow hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">💡 AI Step-by-Step Help</h2>
+                    <form id="helpForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Question</label>
+                            <textarea name="question" rows="3" required
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                      placeholder="Enter the question you need help with..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Your Attempt</label>
+                            <textarea name="student_attempt" rows="3" required
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                      placeholder="Show your work and where you're stuck..."></textarea>
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-teal-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-teal-700 transition-colors">
+                            🧠 Get AI Help
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Results Display -->
+                <div id="resultsDisplay" class="bg-white rounded-lg shadow-lg p-6 ai-shadow hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 AI-Generated Results</h2>
+                    <div id="resultsContent" class="space-y-4">
+                        <!-- Results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-300">Powered by Gemini AI, GPT-OSS-20B, and Google Cloud AI! 🧠⚡🤖</p>
+        </div>
+    </footer>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p class="text-lg font-semibold">AI is working its magic...</p>
+            <p class="text-gray-600">This may take a few moments</p>
+        </div>
+    </div>
+
+    <script>
+        let currentSessionId = null;
+
+        // Check AI services status on page load
+        window.addEventListener('load', async () => {
+            await checkAIStatus();
+        });
+
+        // Check AI services status
+        async function checkAIStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                
+                const statusDiv = document.getElementById('aiStatus');
+                const services = ['mathpix', 'gpt', 'gemini', 'gpt_oss', 'google_cloud', 'practice_generator'];
+                
+                services.forEach((service, index) => {
+                    const serviceDiv = statusDiv.children[index];
+                    const statusDot = serviceDiv.querySelector('div');
+                    const isAvailable = status[service] === 'available' || status[service] === true;
+                    
+                    if (isAvailable) {
+                        statusDot.className = 'w-3 h-3 bg-green-500 rounded-full mx-auto mb-1';
+                    } else {
+                        statusDot.className = 'w-3 h-3 bg-red-500 rounded-full mx-auto mb-1';
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to check AI status:', error);
+            }
+        }
+
+        // Start Exam Session
+        document.getElementById('startExamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/start-exam', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.session_id) {
+                    currentSessionId = result.session_id;
+                    document.getElementById('sessionId').value = currentSessionId;
+                    document.getElementById('uploadMaterialsSection').classList.remove('hidden');
+                    
+                    document.getElementById('uploadMaterialsSection').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                alert('Failed to start exam session: ' + error.message);
+            }
+        });
+
+        // Upload Materials
+        document.getElementById('uploadMaterialsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            formData.set('session_id', currentSessionId);
+            
+            try {
+                showLoading();
+                const response = await fetch('/upload-materials', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    document.getElementById('uploadWorkSection').classList.remove('hidden');
+                    document.getElementById('uploadWorkSection').querySelector('input[name="session_id"]').value = currentSessionId;
+                    
+                    // Show topics found
+                    if (result.topics_found && result.topics_found.length > 0) {
+                        alert(`AI found ${result.topics_found.length} topics in your materials: ${result.topics_found.join(', ')}`);
+                    }
+                    
+                    document.getElementById('uploadWorkSection').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                alert('Failed to upload materials: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Upload Practice Work
+        document.getElementById('uploadWorkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            formData.set('session_id', currentSessionId);
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/upload-practice-work', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    await loadPriorityQueue();
+                    document.getElementById('aiFeaturesSection').classList.remove('hidden');
+                    
+                    document.getElementById('aiFeaturesSection').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                alert('Failed to analyze work: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Generate Practice Exam
+        document.getElementById('generatePracticeExamBtn').addEventListener('click', () => {
+            document.getElementById('practiceExamSection').classList.remove('hidden');
+            document.getElementById('practiceExamSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.getElementById('practiceExamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            formData.set('session_id', currentSessionId);
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/generate-practice-exam', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    displayResults('Practice Exam Generated!', result.practice_exam);
+                }
+            } catch (error) {
+                alert('Failed to generate practice exam: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Create Study Plan
+        document.getElementById('createStudyPlanBtn').addEventListener('click', () => {
+            document.getElementById('studyPlanSection').classList.remove('hidden');
+            document.getElementById('studyPlanSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.getElementById('studyPlanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            formData.set('session_id', currentSessionId);
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/create-study-plan', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    displayResults('Study Plan Created!', result.study_plan);
+                }
+            } catch (error) {
+                alert('Failed to create study plan: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Get Step-by-Step Help
+        document.getElementById('getStepByStepHelpBtn').addEventListener('click', () => {
+            document.getElementById('helpSection').classList.remove('hidden');
+            document.getElementById('helpSection').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.getElementById('helpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/get-step-by-step-help', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    displayResults('AI Help Generated!', result.help);
+                }
+            } catch (error) {
+                alert('Failed to get help: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Load Priority Queue
+        async function loadPriorityQueue() {
+            try {
+                const response = await fetch(`/get-priority-queue/${currentSessionId}`);
+                const result = await response.json();
+                
+                const priorityQueue = document.getElementById('priorityQueue');
+                priorityQueue.innerHTML = '';
+                
+                result.priorities.forEach((topic, index) => {
+                    const topicCard = document.createElement('div');
+                    topicCard.className = 'bg-gray-50 rounded-lg p-4 border-l-4 border-red-500';
+                    topicCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-800">${topic.name}</h3>
+                                <p class="text-gray-600 text-sm">${topic.study_recommendation}</p>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    Attempted: ${topic.questions_attempted} | Correct: ${topic.questions_correct}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-red-600">#${index + 1}</div>
+                                <div class="text-sm text-gray-500">Priority</div>
+                            </div>
+                        </div>
+                    `;
+                    priorityQueue.appendChild(topicCard);
+                });
+            } catch (error) {
+                console.error('Failed to load priority queue:', error);
+            }
+        }
+
+        // Display Results
+        function displayResults(title, data) {
+            const resultsDisplay = document.getElementById('resultsDisplay');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsContent.innerHTML = `
+                <h3 class="text-xl font-semibold text-green-600 mb-4">${title}</h3>
+                <pre class="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">${JSON.stringify(data, null, 2)}</pre>
+            `;
+            
+            resultsDisplay.classList.remove('hidden');
+            resultsDisplay.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Loading functions
+        function showLoading() {
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+            document.getElementById('loadingModal').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>

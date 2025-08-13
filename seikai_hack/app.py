@@ -1,215 +1,279 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from fastapi.requests import Request
+from fastapi import Request
 import os
 import json
-from typing import List, Optional
-import asyncio
-from datetime import datetime
 import uuid
+from datetime import datetime
+import asyncio
 
-from models import ExamSession, Topic, Question, User
-from services.mathpix_service import MathpixService
-from services.gpt_service import GPTService
+# Import our dual-AI services
+from services.gemini_service import GeminiService
+from services.gpt_oss_service import GPTOSSService
 from services.priority_queue import PriorityQueueService
 from services.file_processor import FileProcessor
-from database import get_db, engine
-import models
 
-app = FastAPI(title="LAST MINUTE Exam Prep AI", version="1.0.0")
+app = FastAPI(title="Exam Prep AI - Dual AI System", version="2.0.0")
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Initialize services
-mathpix_service = MathpixService()
-gpt_service = GPTService()
+gemini_service = GeminiService()
+gpt_oss_service = GPTOSSService()
 priority_queue = PriorityQueueService()
 file_processor = FileProcessor()
 
-# Create database tables
-models.Base.metadata.create_all(bind=engine)
-
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    """Main landing page - URGENT MODE interface"""
+async def index(request: Request):
+    """Main page with dual-AI exam prep features"""
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/start-exam")
-async def start_exam(
-    course_name: str = Form(...),
-    exam_date: str = Form(...),
-    db = Depends(get_db)
-):
-    """Start a new exam session"""
-    session_id = str(uuid.uuid4())
-    session = ExamSession(
-        id=session_id,
-        course_name=course_name,
-        exam_date=exam_date,
-        created_at=datetime.utcnow()
-    )
-    db.add(session)
-    db.commit()
-    return {"session_id": session_id, "message": "Exam session started!"}
+@app.get("/api/status")
+async def get_ai_status():
+    """Check the availability of AI services"""
+    return {
+        "gemini": gemini_service.is_available(),
+        "gpt_oss": gpt_oss_service.is_available(),
+        "timestamp": datetime.now().isoformat()
+    }
 
-@app.post("/upload-materials")
-async def upload_materials(
-    session_id: str = Form(...),
-    textbook: Optional[UploadFile] = File(None),
-    slides: Optional[UploadFile] = File(None),
-    homework: Optional[UploadFile] = File(None),
-    past_exams: Optional[UploadFile] = File(None),
-    syllabus: Optional[UploadFile] = File(None),
-    db = Depends(get_db)
+@app.post("/api/upload-practice-exam")
+async def upload_practice_exam(
+    exam_file: UploadFile = File(...),
+    exam_type: str = Form("practice_exam")
 ):
-    """Upload course materials for AI analysis"""
+    """
+    Upload a practice exam PDF and extract LaTeX code using Gemini
+    """
     try:
-        # Process uploaded files
-        materials = {}
-        if textbook:
-            materials["textbook"] = await file_processor.process_file(textbook, "textbook")
-        if slides:
-            materials["slides"] = await file_processor.process_file(slides, "slides")
-        if homework:
-            materials["homework"] = await file_processor.process_file(homework, "homework")
-        if past_exams:
-            materials["past_exams"] = await file_processor.process_file(past_exams, "past_exams")
-        if syllabus:
-            materials["syllabus"] = await file_processor.process_file(syllabus, "syllabus")
+        # Validate file type
+        if not exam_file.content_type == "application/pdf":
+            raise HTTPException(status_code=400, detail="Only PDF files are supported")
         
-        # Store materials in database
-        session = db.query(ExamSession).filter(ExamSession.id == session_id).first()
-        if session:
-            session.materials = materials
-            db.commit()
+        print(f"Processing PDF: {exam_file.filename}, Size: {exam_file.size} bytes")
         
-        return {"message": "Materials uploaded successfully!", "materials": list(materials.keys())}
+        # Extract LaTeX from PDF using Gemini
+        print("Calling Gemini service for LaTeX extraction...")
+        latex_result = await gemini_service.extract_latex_from_pdf(exam_file)
+        print(f"Gemini result: {latex_result}")
+        
+        if not latex_result["success"]:
+            raise HTTPException(status_code=500, detail=f"LaTeX extraction failed: {latex_result['error']}")
+        
+        # Validate LaTeX code using GPT-OSS
+        print("Calling GPT-OSS service for LaTeX validation...")
+        validation_result = await gpt_oss_service.validate_latex_code(latex_result["latex_code"])
+        print(f"Validation result: {validation_result}")
+        
+        # Classify topics from LaTeX using GPT-OSS
+        print("Calling GPT-OSS service for topic classification...")
+        topic_result = await gpt_oss_service.classify_topics_from_latex(latex_result["latex_code"])
+        print(f"Topic result: {topic_result}")
+        
+        # Save to processed directory
+        session_id = str(uuid.uuid4())
+        result_data = {
+            "session_id": session_id,
+            "timestamp": datetime.now().isoformat(),
+            "file_name": exam_file.filename,
+            "latex_code": latex_result["latex_code"],
+            "validation": validation_result,
+            "topics": topic_result,
+            "original_text": latex_result["original_text"],
+            "page_count": latex_result["page_count"]
+        }
+        
+        print(f"Saving result data for session: {session_id}")
+        await file_processor.save_processed_result(session_id, result_data)
+        
+        return {
+            "success": True,
+            "session_id": session_id,
+            "latex_code": latex_result["latex_code"],
+            "validation": validation_result,
+            "topics": topic_result,
+            "message": "Practice exam uploaded and analyzed successfully"
+        }
+        
     except Exception as e:
+        print(f"Error in upload_practice_exam: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
-@app.post("/upload-practice-work")
-async def upload_practice_work(
-    session_id: str = Form(...),
-    work_files: List[UploadFile] = File(...),
-    db = Depends(get_db)
+@app.post("/api/upload-student-work")
+async def upload_student_work(
+    work_file: UploadFile = File(...),
+    session_id: str = Form(...)
 ):
-    """Upload practice work files (PDF, images, handwritten work) for AI analysis"""
+    """
+    Upload student's handwritten work and extract LaTeX code using Gemini
+    """
     try:
-        results = []
-        for work_file in work_files:
-            # Validate file type
-            if not _is_valid_practice_file(work_file):
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"Unsupported file type: {work_file.content_type}. Supported: PDF, PNG, JPG, JPEG, GIF, BMP"
-                )
-            
-            # Process file based on type
-            if work_file.content_type == "application/pdf":
-                # Handle PDF files
-                extracted_text = await _process_pdf_file(work_file)
-            else:
-                # Handle image files (PNG, JPG, etc.)
-                extracted_text = await mathpix_service.extract_text(work_file)
-            
-            # Analyze correctness using GPT
-            analysis = await gpt_service.analyze_work(extracted_text)
-            
-            # Store question and analysis
-            question = Question(
-                session_id=session_id,
-                extracted_text=extracted_text,
-                is_correct=analysis["is_correct"],
-                feedback=analysis["feedback"],
-                topics=analysis["topics"],
-                confidence=analysis["confidence"]
-            )
-            db.add(question)
-            
-            results.append({
-                "question_id": question.id,
-                "filename": work_file.filename,
-                "file_type": work_file.content_type,
-                "extracted_text": extracted_text,
-                "analysis": analysis
-            })
+        # Validate file type
+        if not work_file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="Only image files are supported")
         
-        db.commit()
+        # Extract LaTeX from image using Gemini
+        latex_result = await gemini_service.extract_latex_from_image(work_file)
         
-        # Update priority queue based on results
-        await priority_queue.update_priorities(session_id, results)
+        if not latex_result["success"]:
+            raise HTTPException(status_code=500, detail=f"LaTeX extraction failed: {latex_result['error']}")
         
-        return {"message": "Practice work analyzed!", "results": results}
+        # Validate LaTeX code using GPT-OSS
+        validation_result = await gpt_oss_service.validate_latex_code(latex_result["latex_code"])
+        
+        # Save student work
+        work_id = str(uuid.uuid4())
+        work_data = {
+            "work_id": work_id,
+            "session_id": session_id,
+            "timestamp": datetime.now().isoformat(),
+            "file_name": work_file.filename,
+            "latex_code": latex_result["latex_code"],
+            "validation": validation_result,
+            "file_type": latex_result["file_type"]
+        }
+        
+        await file_processor.save_processed_result(work_id, work_data)
+        
+        return {
+            "success": True,
+            "work_id": work_id,
+            "latex_code": latex_result["latex_code"],
+            "validation": validation_result,
+            "message": "Student work uploaded and analyzed successfully"
+        }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-def _is_valid_practice_file(file: UploadFile) -> bool:
-    """Check if uploaded file is a valid practice work format"""
-    valid_types = [
-        "application/pdf",  # PDF files
-        "image/png",        # PNG images
-        "image/jpeg",       # JPEG images
-        "image/jpg",        # JPG images
-        "image/gif",        # GIF images
-        "image/bmp",        # BMP images
-        "image/webp",       # WebP images
-        "image/tiff",       # TIFF images
-    ]
-    return file.content_type in valid_types
-
-async def _process_pdf_file(pdf_file: UploadFile) -> str:
-    """Extract text from PDF files"""
+@app.post("/api/generate-practice-exam")
+async def generate_practice_exam(
+    session_id: str = Form(...),
+    target_topics: str = Form(...),
+    difficulty: str = Form("medium")
+):
+    """
+    Generate a practice exam based on identified topics using GPT-OSS
+    """
     try:
-        # For now, we'll use a simple approach
-        # In production, you might want to use PyPDF2 or pdfplumber for better extraction
-        import PyPDF2
-        import io
+        # Parse target topics
+        topics = json.loads(target_topics) if isinstance(target_topics, str) else target_topics
         
-        # Read PDF content
-        pdf_content = await pdf_file.read()
-        pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+        # Get exam format from original practice exam
+        session_data = await file_processor.load_processed_result(session_id)
+        if not session_data:
+            raise HTTPException(status_code=404, detail="Session not found")
         
-        # Extract text from all pages
-        extracted_text = ""
-        for page in pdf_reader.pages:
-            extracted_text += page.extract_text() + "\n"
+        # Create exam format based on original
+        exam_format = {
+            "style": "practice_exam",
+            "difficulty": difficulty,
+            "question_count": len(topics) * 2,  # 2 questions per topic
+            "time_limit": "60 minutes"
+        }
         
-        return extracted_text.strip()
-    except ImportError:
-        # Fallback if PyPDF2 is not available
-        return f"PDF file uploaded: {pdf_file.filename} (PDF processing not available)"
+        # Generate practice exam using GPT-OSS
+        practice_exam = await gpt_oss_service.generate_practice_exam(topics, exam_format)
+        
+        return {
+            "success": True,
+            "practice_exam": practice_exam,
+            "message": "Practice exam generated successfully"
+        }
+        
     except Exception as e:
-        return f"Error processing PDF: {str(e)}"
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/get-priority-queue/{session_id}")
-async def get_priority_queue(session_id: str, db = Depends(get_db)):
-    """Get prioritized topics for study focus"""
+@app.post("/api/analyze-student-work")
+async def analyze_student_work(
+    student_latex: str = Form(...),
+    correct_solution: str = Form(...)
+):
+    """
+    Analyze student's work and provide feedback using GPT-OSS
+    """
     try:
-        priorities = await priority_queue.get_priorities(session_id)
-        return {"priorities": priorities}
+        # Analyze student work using GPT-OSS
+        analysis_result = await gpt_oss_service.analyze_student_work(student_latex, correct_solution)
+        
+        return {
+            "success": True,
+            "analysis": analysis_result,
+            "message": "Student work analyzed successfully"
+        }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get priorities: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/session/{session_id}")
-async def get_session_summary(session_id: str, request: Request, db = Depends(get_db)):
-    """Get comprehensive session summary"""
-    session = db.query(ExamSession).filter(ExamSession.id == session_id).first()
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    
-    questions = db.query(Question).filter(Question.session_id == session_id).all()
-    priorities = await priority_queue.get_priorities(session_id)
-    
-    return templates.TemplateResponse("session.html", {
-        "request": request,
-        "session": session,
-        "questions": questions,
-        "priorities": priorities
-    })
+@app.get("/api/session/{session_id}")
+async def get_session_data(session_id: str):
+    """Get session data and analysis results"""
+    try:
+        session_data = await file_processor.load_processed_result(session_id)
+        if not session_data:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        return {
+            "success": True,
+            "session_data": session_data
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "services": {
+            "gemini": gemini_service.is_available(),
+            "gpt_oss": gpt_oss_service.is_available()
+        }
+    }
+
+@app.get("/api/test-gemini")
+async def test_gemini():
+    """Test Gemini service with a simple prompt"""
+    try:
+        test_prompt = "Say 'Hello, Gemini is working!' in exactly 5 words."
+        response = await gemini_service._generate_content(test_prompt)
+        return {
+            "success": True,
+            "response": response,
+            "message": "Gemini service is working correctly"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Gemini service test failed"
+        }
+
+@app.get("/api/test-gpt-oss")
+async def test_gpt_oss():
+    """Test GPT-OSS service with a simple prompt"""
+    try:
+        test_prompt = "Say 'Hello, GPT-OSS is working!' in exactly 5 words."
+        response = await gpt_oss_service._generate_content(test_prompt)
+        return {
+            "success": True,
+            "response": response,
+            "message": "GPT-OSS service is working correctly"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "GPT-OSS service test failed"
+        }
 
 if __name__ == "__main__":
     import uvicorn

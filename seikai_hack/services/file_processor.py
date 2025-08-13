@@ -123,8 +123,8 @@ class FileProcessor:
             "type": "syllabus",
             "summary": f"Course syllabus ({len(content)} bytes)",
             "course_info": {},
-            "learning_objectives": [],
-            "assessment_methods": []
+            "schedule": [],
+            "objectives": []
         }
     
     async def _process_generic(self, file_path: str, content: bytes) -> Dict[str, Any]:
@@ -133,8 +133,43 @@ class FileProcessor:
             "type": "generic",
             "summary": f"Generic file ({len(content)} bytes)",
             "file_size": len(content),
-            "extension": self._get_file_extension(file_path)
+            "content_preview": content[:500].decode('utf-8', errors='ignore') if len(content) > 0 else ""
         }
+    
+    async def save_processed_result(self, session_id: str, result_data: Dict[str, Any]) -> bool:
+        """Save processed result data to JSON file"""
+        try:
+            # Ensure processed directory exists
+            if not os.path.exists(self.processed_dir):
+                os.makedirs(self.processed_dir)
+            
+            # Save result data as JSON
+            file_path = os.path.join(self.processed_dir, f"{session_id}.json")
+            async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:
+                import json
+                await f.write(json.dumps(result_data, indent=2, ensure_ascii=False))
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error saving processed result: {str(e)}")
+            return False
+    
+    async def load_processed_result(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Load processed result data from JSON file"""
+        try:
+            file_path = os.path.join(self.processed_dir, f"{session_id}.json")
+            if not os.path.exists(file_path):
+                return None
+            
+            async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
+                content = await f.read()
+                import json
+                return json.loads(content)
+                
+        except Exception as e:
+            print(f"Error loading processed result: {str(e)}")
+            return None
     
     async def process_practice_work(self, file: UploadFile) -> Dict[str, Any]:
         """Process practice work files (PDF, images, etc.)"""
