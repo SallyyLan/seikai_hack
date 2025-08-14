@@ -7,6 +7,272 @@ class PriorityQueueService:
     def __init__(self):
         self.priority_queues = {}  # session_id -> priority queue
     
+    async def calculate_study_priorities(
+        self, 
+        session_id: str, 
+        topics: List[Dict[str, Any]], 
+        minimum_score: float,
+        maximum_score: float
+    ) -> List[Dict[str, Any]]:
+        """Calculate study priorities using the confidence scoring formula"""
+        try:
+            print(f"🔍 Priority calculation: {len(topics)} topics, min_score: {minimum_score}, max_score: {maximum_score}")
+            
+            if not topics:
+                print("⚠️ No topics provided for priority calculation")
+                return []
+            
+            # Calculate scores for each topic using the formula: s_i = B_i * (7 - c_i)/7
+            # where s_i is the score for that topic, B_i is the score worth, c_i is confidence
+            for topic in topics:
+                topic_score = topic.get("score_value", 0.0)
+                user_confidence = topic.get("user_confidence", 1)
+                
+                # Apply the formula: s_i = B_i * (7 - user_confidence) / 7
+                calculated_score = topic_score * (7 - user_confidence) / 7
+                topic["calculated_score"] = calculated_score
+                
+                print(f"📊 Topic: {topic['name']}, Score: {topic_score}, Confidence: {user_confidence}, Calculated: {calculated_score}")
+            
+            # Sort topics by calculated score (highest first)
+            sorted_topics = sorted(topics, key=lambda x: x["calculated_score"], reverse=True)
+            print(f"📈 Sorted topics by calculated score: {[t['name'] for t in sorted_topics]}")
+            
+            # Build priority queue using the algorithm
+            selected_topics = []
+            current_sum = 0.0
+            threshold = 1.0  # Threshold for similar scores
+            
+            # If minimum_score is 0 or very low, select all topics
+            if minimum_score <= 0.1:
+                print(f"🎯 Minimum score is {minimum_score}, selecting all topics")
+                for i, topic in enumerate(sorted_topics):
+                    topic["study_priority"] = i + 1
+                    selected_topics.append(topic)
+                    print(f"✅ Added all topics: {topic['name']}, priority: {topic['study_priority']}")
+            else:
+                # Use the original algorithm for higher minimum scores
+                print(f"🎯 Using score-based selection algorithm for minimum score: {minimum_score}")
+                i = 0
+                while current_sum < minimum_score and i < len(sorted_topics):
+                    current_topic = sorted_topics[i]
+                    current_score = current_topic["calculated_score"]
+                    
+                    # Check if we have adjacent topics to compare
+                    if i + 1 < len(sorted_topics):
+                        next_topic = sorted_topics[i + 1]
+                        next_score = next_topic["calculated_score"]
+                        
+                        # Check if scores are similar (within threshold)
+                        if abs(current_score - next_score) <= threshold:
+                            # Use ChatGPT to determine which topic is easier
+                            easier_topic = await self._determine_easier_topic(current_topic, next_topic)
+                            
+                            if easier_topic["id"] == current_topic["id"]:
+                                # Current topic is easier, add it
+                                selected_topics.append(current_topic)
+                                current_sum += current_score
+                                current_topic["study_priority"] = len(selected_topics)
+                                print(f"✅ Added topic: {current_topic['name']}, priority: {current_topic['study_priority']}, sum: {current_sum}")
+                                i += 1
+                            else:
+                                # Next topic is easier, add it instead
+                                selected_topics.append(next_topic)
+                                current_sum += next_score
+                                next_topic["study_priority"] = len(selected_topics)
+                                print(f"✅ Added topic: {next_topic['name']}, priority: {next_topic['study_priority']}, sum: {current_sum}")
+                                # Skip both topics since we used the next one
+                                i += 2
+                        else:
+                            # Scores are not similar, add current topic
+                            selected_topics.append(current_topic)
+                            current_sum += current_score
+                            current_topic["study_priority"] = len(selected_topics)
+                            print(f"✅ Added topic: {current_topic['name']}, priority: {current_topic['study_priority']}, sum: {current_sum}")
+                            i += 1
+                    else:
+                        # Last topic, just add it
+                        selected_topics.append(current_topic)
+                        current_sum += current_score
+                        current_topic["study_priority"] = len(selected_topics)
+                        print(f"✅ Added topic: {current_topic['name']}, priority: {current_topic['study_priority']}, sum: {current_sum}")
+                        i += 1
+                
+                # If we still haven't reached minimum_score, add remaining topics
+                if current_sum < minimum_score and len(selected_topics) < len(sorted_topics):
+                    print(f"⚠️ Haven't reached minimum score ({current_sum}/{minimum_score}), adding remaining topics")
+                    for i in range(len(selected_topics), len(sorted_topics)):
+                        remaining_topic = sorted_topics[i]
+                        remaining_topic["study_priority"] = len(selected_topics) + 1
+                        selected_topics.append(remaining_topic)
+                        print(f"✅ Added remaining topic: {remaining_topic['name']}, priority: {remaining_topic['study_priority']}")
+            
+            print(f"🎯 Final selection: {len(selected_topics)} topics selected")
+            
+            # Store the priority queue
+            self.priority_queues[session_id] = selected_topics
+            
+            return selected_topics
+            
+        except Exception as e:
+            raise Exception(f"Failed to calculate study priorities: {str(e)}")
+    
+    async def calculate_topic_based_priorities(
+        self, 
+        session_id: str, 
+        exam_topics: List[str],
+        topic_confidence: Dict[str, Any],
+        practice_exam_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """Calculate study priorities based on topics and user confidence levels"""
+        try:
+            print(f"🔍 Topic-based priority calculation for session: {session_id}")
+            print(f"🔍 Exam topics: {exam_topics}")
+            print(f"🔍 Topic confidence: {topic_confidence}")
+            print(f"🔍 Practice exam data keys: {list(practice_exam_data.keys())}")
+            
+            # Get topics data from practice exam
+            topics_data = practice_exam_data.get("topics", [])
+            print(f"🔍 Topics data from practice exam: {len(topics_data) if topics_data else 0} topics")
+            
+            # If we have topics data, use it directly
+            if topics_data:
+                print(f"✅ Using topics data directly")
+                topics_list = []
+                covered_topics = set()
+                
+                # First, add topics that appear in the practice exam
+                for topic_data in topics_data:
+                    topic_name = topic_data["name"]
+                    if topic_name in exam_topics:  # Only include topics from exam coverage
+                        topics_list.append({
+                            "id": topic_name,
+                            "name": topic_name,
+                            "score_value": float(topic_data["score"]),
+                            "user_confidence": topic_confidence.get(topic_name, 1),
+                            "questions_covering": topic_data.get("questions", []),
+                            "total_questions": len(topic_data.get("questions", [])),
+                            "appears_in_practice": True
+                        })
+                        covered_topics.add(topic_name)
+                        print(f"📝 Added topic: {topic_name}, score: {topic_data['score']}, confidence: {topic_confidence.get(topic_name, 1)}")
+                    else:
+                        print(f"⚠️ Topic '{topic_name}' not in exam coverage, skipping")
+                
+                # Then, add topics that are in exam coverage but NOT in practice exam
+                missing_topics = []
+                total_score = practice_exam_data.get("total_score", 100.0)
+                
+                for exam_topic in exam_topics:
+                    if exam_topic not in covered_topics:
+                        # Topic not in practice exam - assign confidence-based estimated values
+                        base_score = max(1.0, total_score / len(exam_topics))  # Base distribution
+                        user_conf = topic_confidence.get(exam_topic, 1)
+                        
+                        # Scale the score based on confidence: lower confidence = higher priority
+                        # Formula: estimated_score = base_score * (7 - confidence) / 6
+                        # This makes low confidence topics get higher scores (higher priority)
+                        confidence_factor = (7 - user_conf) / 6
+                        estimated_score = base_score * confidence_factor
+                        
+                        missing_topics.append(exam_topic)
+                        
+                        topics_list.append({
+                            "id": exam_topic,
+                            "name": exam_topic,
+                            "score_value": estimated_score,
+                            "user_confidence": user_conf,
+                            "questions_covering": [],
+                            "total_questions": 0,
+                            "appears_in_practice": False,
+                            "estimated_score": True,
+                            "confidence_scaled": True
+                        })
+                        print(f"⚠️ Topic '{exam_topic}' NOT found in practice exam - confidence-scaled score: {estimated_score:.1f} (confidence: {user_conf}, base: {base_score:.1f})")
+                
+                if missing_topics:
+                    print(f"📝 Missing topics (estimated scores): {', '.join(missing_topics)}")
+                    print(f"💡 These topics will be prioritized based on confidence scores since they weren't tested")
+            else:
+                print(f"⚠️ No topics data, using fallback method")
+                # Fallback: extract from questions if topics data not available
+                questions = practice_exam_data.get("questions", [])
+                print(f"🔍 Questions from practice exam: {len(questions)} questions")
+                
+                # Calculate topic scores based on questions that cover each topic
+                topic_scores = {}
+                for topic in exam_topics:
+                    topic_scores[topic] = {
+                        "name": topic,
+                        "score_value": 0.0,
+                        "user_confidence": topic_confidence.get(topic, 1),
+                        "questions_covering": [],
+                        "total_questions": 0
+                    }
+                
+                # Analyze which questions cover which topics
+                for question in questions:
+                    question_topics = question.get("topics", [])
+                    question_score = question.get("score", 0)
+                    
+                    for topic in question_topics:
+                        if topic in topic_scores:
+                            topic_scores[topic]["score_value"] += question_score
+                            topic_scores[topic]["questions_covering"].append({
+                                "question": question.get("question_text", ""),
+                                "score": question_score
+                            })
+                            topic_scores[topic]["total_questions"] += 1
+                
+                # Convert to list format for priority calculation
+                topics_list = []
+                for topic_name, topic_data in topic_scores.items():
+                    topics_list.append({
+                        "id": topic_name,
+                        "name": topic_name,
+                        "score_value": topic_data["score_value"],
+                        "user_confidence": topic_data["user_confidence"],
+                        "questions_covering": topic_data["questions_covering"],
+                        "total_questions": topic_data["total_questions"],
+                        "appears_in_practice": topic_data["score_value"] > 0
+                    })
+                    print(f"📝 Fallback topic: {topic_name}, score: {topic_data['score_value']}, confidence: {topic_data['user_confidence']}")
+            
+            print(f"🔍 Final topics list: {len(topics_list)} topics")
+            for topic in topics_list:
+                print(f"  - {topic['name']}: score={topic['score_value']}, confidence={topic['user_confidence']}")
+            
+            # Calculate study priorities using the existing algorithm
+            minimum_score = practice_exam_data.get("minimum_score", 0.0)
+            maximum_score = practice_exam_data.get("total_score", 0.0)
+            
+            print(f"🔍 Calling calculate_study_priorities with: min={minimum_score}, max={maximum_score}")
+            
+            return await self.calculate_study_priorities(session_id, topics_list, minimum_score, maximum_score)
+            
+        except Exception as e:
+            raise Exception(f"Failed to calculate topic-based priorities: {str(e)}")
+    
+    async def _determine_easier_topic(self, topic1: Dict[str, Any], topic2: Dict[str, Any]) -> Dict[str, Any]:
+        """Use ChatGPT to determine which topic is easier to study"""
+        try:
+            # This would typically call the GPT service
+            # For now, we'll use a simple heuristic based on name length and score
+            # In production, this should call GPT to analyze the topics
+            
+            # Simple heuristic: shorter name and higher score might indicate easier topic
+            if len(topic1["name"]) < len(topic2["name"]) and topic1["calculated_score"] > topic2["calculated_score"]:
+                return topic1
+            elif len(topic2["name"]) < len(topic1["name"]) and topic2["calculated_score"] > topic1["calculated_score"]:
+                return topic2
+            else:
+                # Default to the one with higher calculated score
+                return topic1 if topic1["calculated_score"] > topic2["calculated_score"] else topic2
+                
+        except Exception as e:
+            # Fallback: return the topic with higher calculated score
+            return topic1 if topic1["calculated_score"] > topic2["calculated_score"] else topic2
+    
     async def update_priorities(self, session_id: str, question_results: List[Dict[str, Any]]):
         """Update topic priorities based on question results"""
         if session_id not in self.priority_queues:
@@ -117,7 +383,10 @@ class PriorityQueueService:
             "priority_score": 1.0,
             "questions_attempted": 0,
             "questions_correct": 0,
-            "last_practiced": datetime.utcnow()
+            "last_practiced": datetime.utcnow(),
+            "user_confidence": 1,
+            "calculated_score": 0.0,
+            "study_priority": 0
         }
         
         # Store in memory
@@ -186,6 +455,9 @@ class PriorityQueueService:
                     topic["questions_attempted"] = 0
                     topic["questions_correct"] = 0
                     topic["last_practiced"] = datetime.utcnow()
+                    topic["user_confidence"] = 1
+                    topic["calculated_score"] = 0.0
+                    topic["study_priority"] = 0
         
         # Rebuild queue
         await self._rebuild_queue(session_id)

@@ -23,7 +23,7 @@ def main():
     print("=" * 40)
     
     # Check for required API keys
-    required_keys = ["OPENAI_API_KEY", "MATHPIX_APP_ID", "MATHPIX_APP_KEY"]
+    required_keys = ["GEMINI_API_KEY", "GPT_OSS_MODEL", "HF_TOKEN"]
     missing_keys = [key for key in required_keys if not os.getenv(key)]
     
     if missing_keys:

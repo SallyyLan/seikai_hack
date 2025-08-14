@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
@@ -12,7 +12,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./exam_prep.db")
 # Create engine
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    echo=False  # Set to True for SQL debugging
 )
 
 # Create session factory
@@ -25,3 +26,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Test database connection
+def test_connection():
+    """Test database connection"""
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT 1"))
+            return True
+    except Exception as e:
+        print(f"Database connection test failed: {e}")
+        return False

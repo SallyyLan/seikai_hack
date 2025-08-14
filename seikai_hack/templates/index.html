@@ -19,6 +19,16 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
+        .confidence-bar {
+            transition: all 0.3s ease;
+        }
+        .confidence-bar:hover {
+            transform: scale(1.1);
+        }
+        .confidence-bar.selected {
+            background-color: #dc2626;
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -38,18 +48,11 @@
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 Step 1: Start Your Exam Session</h2>
                 <form id="startExamForm" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Course Name</label>
-                            <input type="text" name="course_name" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                                   placeholder="e.g., Calculus II, Physics 101">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Exam Date</label>
-                            <input type="date" name="exam_date" required 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500">
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Course Name</label>
+                        <input type="text" name="course_name" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                               placeholder="e.g., Calculus II, Physics 101">
                     </div>
                     <button type="submit" 
                             class="w-full bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors">
@@ -58,75 +61,91 @@
                 </form>
             </div>
 
-            <!-- Step 2: Upload Materials (Hidden until session starts) -->
-            <div id="uploadMaterialsSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">📚 Step 2: Upload Course Materials</h2>
-                <p class="text-gray-600 mb-4">Upload your course materials to help AI understand what you're studying</p>
+            <!-- Step 2: Upload Exam Coverage (Hidden until session starts) -->
+            <div id="examCoverageSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📋 Step 2: Enter Exam Coverage</h2>
+                <p class="text-gray-600 mb-4">Enter the topics and concepts that will be covered on your exam</p>
                 
-                <form id="uploadMaterialsForm" class="space-y-4">
-                    <input type="hidden" id="sessionId" name="session_id">
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📖 Textbook</label>
-                            <input type="file" name="textbook" accept=".pdf,.doc,.docx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📊 Lecture Slides</label>
-                            <input type="file" name="slides" accept=".pdf,.ppt,.pptx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📝 Homework</label>
-                            <input type="file" name="homework" accept=".pdf,.doc,.docx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">📋 Past Exams</label>
-                            <input type="file" name="past_exams" accept=".pdf,.doc,.docx" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">📋 Syllabus</label>
-                        <input type="file" name="syllabus" accept=".pdf,.doc,.docx" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    </div>
-                    
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors">
-                        📤 UPLOAD MATERIALS
-                    </button>
-                </form>
-            </div>
-
-            <!-- Step 3: Upload Practice Work (Hidden until materials uploaded) -->
-            <div id="uploadWorkSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">✍️ Step 3: Upload Your Practice Work</h2>
-                <p class="text-gray-600 mb-4">Upload your practice work in any format and get instant AI feedback!</p>
-                
-                <form id="uploadWorkForm" class="space-y-4">
+                <form id="examCoverageForm" class="space-y-4">
                     <input type="hidden" name="session_id">
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">📄 Practice Work Files</label>
-                        <input type="file" name="work_files" multiple 
-                               accept=".pdf,.png,.jpg,.jpeg,.gif,.bmp,.webp,.tiff,image/*" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📝 Exam Coverage Topics</label>
+                        <textarea name="exam_coverage_text" required rows="6"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                  placeholder="Enter the topics that will be on your exam. For example:
+
+• Calculus Integration
+• Differential Equations  
+• Linear Algebra
+• Vector Calculus
+• Limits and Continuity
+• Derivatives and Applications
+
+You can copy-paste from your syllabus, study guide, or just list the main topics you need to study."></textarea>
                         <p class="text-sm text-gray-500 mt-1">
-                            Supported formats: PDF documents, PNG, JPG, JPEG, GIF, BMP, WebP, TIFF images<br>
-                            📱 Take photos of handwritten work • 📄 Upload PDF practice tests • 🖼️ Screenshots of problems
+                            List the main topics, concepts, or chapters that will be covered on your exam
                         </p>
                     </div>
                     
                     <button type="submit" 
-                            class="w-full bg-green-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-green-700 transition-colors">
-                        🔍 ANALYZE MY WORK
+                            class="w-full bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors">
+                        🚀 PROCESS EXAM COVERAGE
                     </button>
                 </form>
             </div>
+
+            <!-- Step 3: Upload Practice Exam (Hidden until exam coverage uploaded) -->
+            <div id="practiceExamSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 Step 3: Upload Practice Exam</h2>
+                <p class="text-gray-600 mb-4">Upload a practice exam to analyze questions and set your target score</p>
+                
+                <form id="practiceExamForm" class="space-y-4">
+                    <input type="hidden" name="session_id">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📄 Practice Exam</label>
+                        <input type="file" name="practice_exam_file" required 
+                               accept=".pdf,.png,.jpg,.jpeg" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <p class="text-sm text-gray-500 mt-1">
+                            Upload your practice exam (PDF or image)
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">🎯 Minimum Score You Want to Achieve</label>
+                        <input type="number" name="minimum_score" required min="0" step="0.1"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                               placeholder="e.g., 75.0">
+                        <p class="text-sm text-gray-500 mt-1">
+                            Enter the minimum score you want to achieve on your actual exam
+                        </p>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors">
+                        📤 UPLOAD PRACTICE EXAM
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 4: Set Confidence Scores (Hidden until practice exam uploaded) -->
+            <div id="confidenceSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 urgent-shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 Step 4: Rate Your Confidence</h2>
+                <p class="text-gray-600 mb-4">Rate your confidence level for each topic that will be on your exam</p>
+                
+                <div id="topicsList" class="space-y-4">
+                    <!-- Topics will be populated here -->
+                </div>
+                
+                <button type="button" id="submitConfidence" 
+                        class="w-full bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors mt-6">
+                    🚀 CALCULATE STUDY PRIORITIES
+                </button>
+            </div>
+
+
 
             <!-- Results Section (Hidden until work is analyzed) -->
             <div id="resultsSection" class="bg-white rounded-lg shadow-lg p-6 urgent-shadow hidden">
@@ -135,11 +154,18 @@
                     <!-- Priority queue will be populated here -->
                 </div>
                 
-                <div class="mt-6 text-center">
+                <div class="mt-6 text-center space-y-4">
                     <a href="#" id="viewFullReport" 
                        class="inline-block bg-purple-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-purple-700 transition-colors">
                         📊 VIEW FULL REPORT
                     </a>
+                    
+                    <div>
+                        <button type="button" id="generatePracticeExam" 
+                                class="bg-red-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-red-700 transition-colors">
+                            📝 GENERATE NEW PRACTICE EXAM
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -152,22 +178,28 @@
         </div>
     </footer>
 
-    <!-- Loading Modal -->
-    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+
+    <!-- Processing Indicator -->
+    <div id="processingIndicator" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-8 text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-            <p class="text-lg font-semibold">AI is analyzing your work...</p>
-            <p class="text-gray-600">This may take a few moments</p>
+            <p class="text-lg font-semibold" id="processingMessage">Processing...</p>
+            <p class="text-gray-600" id="processingDetails">Please wait while we process your data</p>
         </div>
     </div>
 
     <script>
         let currentSessionId = null;
+        let examTopics = [];
+        let practiceExamData = null;
 
         // Start Exam Session
         document.getElementById('startExamForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
+            
+            showProcessing("Starting exam session...", "Creating your study session");
             
             try {
                 const response = await fetch('/start-exam', {
@@ -178,117 +210,500 @@
                 const result = await response.json();
                 if (result.session_id) {
                     currentSessionId = result.session_id;
-                    document.getElementById('sessionId').value = currentSessionId;
-                    document.getElementById('uploadMaterialsSection').classList.remove('hidden');
+                    document.getElementById('examCoverageSection').classList.remove('hidden');
+                    document.getElementById('examCoverageSection').querySelector('input[name="session_id"]').value = currentSessionId;
                     
                     // Scroll to next section
-                    document.getElementById('uploadMaterialsSection').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('examCoverageSection').scrollIntoView({ behavior: 'smooth' });
                 }
             } catch (error) {
                 alert('Failed to start exam session: ' + error.message);
+            } finally {
+                hideProcessing();
             }
         });
 
-        // Upload Materials
-        document.getElementById('uploadMaterialsForm').addEventListener('submit', async (e) => {
+        // Upload Exam Coverage
+        document.getElementById('examCoverageForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             formData.set('session_id', currentSessionId);
             
+            showProcessing("Processing exam coverage...", "AI is analyzing your exam topics");
+            
             try {
-                const response = await fetch('/upload-materials', {
+                const response = await fetch('/upload-exam-coverage', {
                     method: 'POST',
                     body: formData
                 });
                 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const result = await response.json();
                 if (result.message) {
-                    document.getElementById('uploadWorkSection').classList.remove('hidden');
-                    document.getElementById('uploadWorkSection').querySelector('input[name="session_id"]').value = currentSessionId;
+                    examTopics = result.topics;
+                    document.getElementById('practiceExamSection').classList.remove('hidden');
+                    document.getElementById('practiceExamSection').querySelector('input[name="session_id"]').value = currentSessionId;
+                    
+                    // Show success message
+                    if (result.topics && result.topics.length > 0) {
+                        alert(`✅ Exam coverage processed successfully!\n\nFound ${result.topics.length} consolidated topics:\n${result.topics.join('\n')}`);
+                    }
                     
                     // Scroll to next section
-                    document.getElementById('uploadWorkSection').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('practiceExamSection').scrollIntoView({ behavior: 'smooth' });
                 }
             } catch (error) {
-                alert('Failed to upload materials: ' + error.message);
+                console.error('Exam coverage error:', error);
+                alert('Failed to process exam coverage: ' + error.message);
+            } finally {
+                hideProcessing();
             }
         });
 
-        // Upload Practice Work
-        document.getElementById('uploadWorkForm').addEventListener('submit', async (e) => {
+        // Upload Practice Exam
+        document.getElementById('practiceExamSection').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             formData.set('session_id', currentSessionId);
             
-            // Show loading modal
-            document.getElementById('loadingModal').classList.remove('hidden');
-            document.getElementById('loadingModal').classList.add('flex');
+            showProcessing("Processing practice exam...", "AI is analyzing questions and topics");
             
             try {
-                const response = await fetch('/upload-practice-work', {
+                const response = await fetch('/upload-practice-exam', {
                     method: 'POST',
                     body: formData
                 });
                 
                 const result = await response.json();
                 if (result.message) {
-                    // Get priority queue
-                    await loadPriorityQueue();
+                    practiceExamData = result;
+                    document.getElementById('confidenceSection').classList.remove('hidden');
+                    
+                    // Populate topics for confidence scoring
+                    populateTopicsForConfidence();
+                    
+                    // Scroll to next section
+                    document.getElementById('confidenceSection').scrollIntoView({ behavior: 'smooth' });
+                }
+            } catch (error) {
+                alert('Failed to upload practice exam: ' + error.message);
+            } finally {
+                hideProcessing();
+            }
+        });
+
+        // Populate topics for confidence scoring
+        function populateTopicsForConfidence() {
+            const topicsList = document.getElementById('topicsList');
+            topicsList.innerHTML = '';
+            
+            examTopics.forEach((topic, index) => {
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'bg-gray-50 rounded-lg p-4 border-l-4 border-red-500';
+                topicDiv.innerHTML = `
+                    <h3 class="font-semibold text-lg text-gray-800 mb-3">${topic}</h3>
+                    <p class="text-sm text-gray-600 mb-3">Rate your confidence level (1 = Very Unconfident, 6 = Very Confident)</p>
+                    <div class="flex space-x-2 mb-2">
+                        ${[1, 2, 3, 4, 5, 6].map(level => `
+                            <button type="button" 
+                                    class="confidence-bar w-10 h-10 rounded-full border-2 border-red-300 text-red-600 font-semibold hover:bg-red-100"
+                                    data-topic="${topic}" 
+                                    data-level="${level}"
+                                    onclick="setConfidence('${topic}', ${level}, this)">
+                                ${level}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <span class="confidence-label-1">Very Unconfident</span> • 
+                        <span class="confidence-label-6">Very Confident</span>
+                    </div>
+                `;
+                topicsList.appendChild(topicDiv);
+            });
+        }
+
+        // Set confidence level for a topic
+        function setConfidence(topic, level, button) {
+            // Remove selected class from all buttons in this topic group
+            const topicDiv = button.closest('.bg-gray-50');
+            topicDiv.querySelectorAll('.confidence-bar').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            button.classList.add('selected');
+            
+            // Store confidence level
+            if (!window.topicConfidence) window.topicConfidence = {};
+            window.topicConfidence[topic] = level;
+        }
+
+        // Submit Confidence Scores
+        document.getElementById('submitConfidence').addEventListener('click', async () => {
+            if (!window.topicConfidence || Object.keys(window.topicConfidence).length === 0) {
+                alert('Please rate your confidence for all topics first.');
+                return;
+            }
+            
+            showProcessing("Calculating study priorities...", "AI is determining your study order");
+            
+            try {
+                const formData = new FormData();
+                formData.append('session_id', currentSessionId);
+                formData.append('confidence_scores', JSON.stringify(window.topicConfidence));
+                
+                const response = await fetch('/set-confidence-scores', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    // Now calculate priorities
+                    await calculateStudyPriorities();
+                }
+            } catch (error) {
+                alert('Failed to submit confidence scores: ' + error.message);
+            } finally {
+                hideProcessing();
+            }
+        });
+
+        // Calculate Study Priorities
+        async function calculateStudyPriorities() {
+            try {
+                const formData = new FormData();
+                formData.append('session_id', currentSessionId);
+                
+                const response = await fetch('/calculate-priorities', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.message) {
+                    // Show priority results
+                    displayPriorityResults(result.priorities);
+                    
+                    // Show results section directly (skip Step 4)
                     document.getElementById('resultsSection').classList.remove('hidden');
                     
                     // Scroll to results
                     document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
                 }
             } catch (error) {
-                alert('Failed to analyze work: ' + error.message);
+                alert('Failed to calculate priorities: ' + error.message);
+            }
+        }
+
+        // Display Priority Results
+        function displayPriorityResults(priorities) {
+            const priorityQueue = document.getElementById('priorityQueue');
+            priorityQueue.innerHTML = '';
+            
+            priorities.forEach((topic, index) => {
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4 border-l-4 border-red-500 mb-4';
+                topicDiv.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-lg text-gray-800">
+                            #${topic.study_priority} - ${topic.name}
+                        </h3>
+                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            ${topic.calculated_score.toFixed(1)} pts
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div>
+                            <span class="font-semibold">Topic Score:</span> ${topic.score_value} pts
+                        </div>
+                        <div>
+                            <span class="font-semibold">Your Confidence:</span> ${topic.user_confidence}/6
+                        </div>
+                        <div>
+                            <span class="font-semibold">Questions:</span> ${topic.total_questions}
+                        </div>
+                        <div>
+                            <span class="font-semibold">Priority:</span> ${topic.study_priority}
+                        </div>
+                    </div>
+                    ${topic.questions_covering && topic.questions_covering.length > 0 ? `
+                        <div class="mt-3 p-3 bg-gray-100 rounded">
+                            <p class="text-sm font-semibold text-gray-700 mb-2">Questions covering this topic:</p>
+                            <ul class="text-xs text-gray-600 space-y-1">
+                                ${topic.questions_covering.map(q => `
+                                    <li>• ${q.question.substring(0, 50)}${q.question.length > 50 ? '...' : ''} (${q.score} pts)</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                `;
+                priorityQueue.appendChild(topicDiv);
+            });
+            
+            // Show results section
+            document.getElementById('resultsSection').classList.remove('hidden');
+        }
+
+
+
+        // Generate Practice Exam
+        document.getElementById('generatePracticeExam').addEventListener('click', async () => {
+            showProcessing("Generating practice exam...", "AI is creating a personalized exam based on your priorities");
+            
+            try {
+                const formData = new FormData();
+                formData.append('session_id', currentSessionId);
+                formData.append('difficulty_level', 'medium');
+                
+                const response = await fetch('/generate-practice-exam', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    // Download the LaTeX file
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'personalized_practice_exam.tex';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    // Show success message
+                    alert('✅ Practice exam generated successfully!\n\n📁 File downloaded: personalized_practice_exam.tex\n\n💡 You can now:\n• Open this file in Overleaf\n• Compile it to PDF\n• Use it for focused studying on your priority topics');
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Practice exam generation error:', error);
+                
+                if (error.message.includes('GPT service not available')) {
+                    alert('❌ Practice exam generation failed: GPT service is not available.\n\nPlease check your API keys in the .env file:\n- GPT_OSS_MODEL\n- HF_TOKEN');
+                } else if (error.message.includes('No prioritized topics found')) {
+                    alert('❌ Practice exam generation failed: No study priorities found.\n\nPlease complete the confidence scoring step first.');
+                } else {
+                    alert('❌ Practice exam generation failed: ' + error.message);
+                }
             } finally {
-                // Hide loading modal
-                document.getElementById('loadingModal').classList.add('hidden');
-                document.getElementById('loadingModal').classList.remove('flex');
+                hideProcessing();
             }
         });
 
         // Load Priority Queue
         async function loadPriorityQueue() {
             try {
-                const response = await fetch(`/get-priority-queue/${currentSessionId}`);
-                const result = await response.json();
-                
-                const priorityQueue = document.getElementById('priorityQueue');
-                priorityQueue.innerHTML = '';
-                
-                result.priorities.forEach((topic, index) => {
-                    const topicCard = document.createElement('div');
-                    topicCard.className = 'bg-gray-50 rounded-lg p-4 border-l-4 border-red-500';
-                    topicCard.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-semibold text-lg text-gray-800">${topic.name}</h3>
-                                <p class="text-gray-600 text-sm">${topic.study_recommendation}</p>
-                                <div class="mt-2 text-xs text-gray-500">
-                                    Attempted: ${topic.questions_attempted} | Correct: ${topic.questions_correct}
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-2xl font-bold text-red-600">#${index + 1}</div>
-                                <div class="text-sm text-gray-500">Priority</div>
-                            </div>
-                        </div>
-                    `;
-                    priorityQueue.appendChild(topicCard);
-                });
+                // Get priorities from session if available
+                const session = await getSessionData(currentSessionId);
+                if (session && session.materials && session.materials.study_priorities) {
+                    displayPriorityResults(session.materials.study_priorities);
+                }
             } catch (error) {
                 console.error('Failed to load priority queue:', error);
             }
         }
 
+        // Get Session Data
+        async function getSessionData(sessionId) {
+            try {
+                const response = await fetch(`/session/${sessionId}`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.error('Failed to get session data:', error);
+            }
+            return null;
+        }
+
         // View Full Report
-        document.getElementById('viewFullReport').addEventListener('click', (e) => {
+        document.getElementById('viewFullReport').addEventListener('click', async (e) => {
             e.preventDefault();
-            if (currentSessionId) {
-                window.open(`/session/${currentSessionId}`, '_blank');
+            
+            try {
+                // Get session data
+                const session = await getSessionData(currentSessionId);
+                if (session) {
+                    displayFullReport(session);
+                } else {
+                    alert('Failed to load session data');
+                }
+            } catch (error) {
+                alert('Failed to load full report: ' + error.message);
             }
         });
+
+        // Display Full Report
+        function displayFullReport(session) {
+            // Create a modal for the full report
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] flex flex-col">
+                    <!-- Header with close button -->
+                    <div class="flex justify-between items-center p-6 border-b border-gray-200 bg-gray-50 rounded-t-lg flex-shrink-0">
+                        <h2 class="text-3xl font-bold text-gray-800">📊 Full Study Report</h2>
+                        <button id="closeReportBtn" class="text-gray-500 hover:text-gray-700 text-3xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors">&times;</button>
+                    </div>
+                    
+                    <!-- Scrollable content area -->
+                    <div class="flex-1 overflow-y-auto p-6 space-y-6" style="max-height: calc(95vh - 200px);">
+                        <!-- Course Information -->
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-blue-800 mb-2">📚 Course Information</h3>
+                            <p class="text-blue-700"><strong>Course:</strong> ${session.course_name}</p>
+                            <p class="text-blue-700"><strong>Target Score:</strong> ${session.minimum_score}/${session.maximum_score} (${Math.round(session.minimum_score/session.maximum_score*100)}%)</p>
+                        </div>
+                        
+                        <!-- Exam Coverage -->
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-green-800 mb-2">📋 Exam Coverage</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                ${session.exam_coverage.topics.map(topic => `
+                                    <div class="bg-white p-2 rounded border">• ${topic}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Confidence Scores -->
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-yellow-800 mb-2">🎯 Your Confidence Levels</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                ${Object.entries(session.materials.topic_confidence || {}).map(([topic, confidence]) => `
+                                    <div class="bg-white p-2 rounded border">
+                                        <span class="font-medium">${topic}:</span> 
+                                        <span class="text-${confidence <= 2 ? 'red' : confidence <= 4 ? 'yellow' : 'green'}-600 font-bold">${confidence}/6</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Practice Exam Analysis -->
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-purple-800 mb-2">📝 Practice Exam Analysis</h3>
+                            <p class="text-purple-700 mb-2"><strong>Total Questions:</strong> ${session.practice_exam.questions.length}</p>
+                            <p class="text-purple-700 mb-2"><strong>Total Score:</strong> ${session.practice_exam.total_score} points</p>
+                            
+                            <div class="mt-3">
+                                <h4 class="font-semibold text-purple-700 mb-2">Questions by Topic:</h4>
+                                ${Object.entries(groupQuestionsByTopic(session.practice_exam.questions)).map(([topic, questions]) => `
+                                    <div class="bg-white p-2 rounded border mb-2">
+                                        <span class="font-medium">${topic}:</span> ${questions.length} questions (${questions.reduce((sum, q) => sum + q.score, 0)} points)
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- Study Priorities -->
+                        ${session.materials.study_priorities ? `
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h3 class="text-xl font-semibold text-red-800 mb-2">🚀 Study Priorities</h3>
+                            <div class="space-y-2">
+                                ${session.materials.study_priorities.map((topic, index) => `
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-lg">#${topic.study_priority} - ${topic.name}</span>
+                                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                                ${topic.calculated_score.toFixed(1)} pts
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-gray-600 mt-1">
+                                            Score Value: ${topic.score_value} pts | Your Confidence: ${topic.user_confidence}/6
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Footer with close button -->
+                    <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-lg text-center flex-shrink-0">
+                        <button id="closeReportBtn2" 
+                                class="bg-red-600 text-white py-3 px-8 rounded-md font-semibold hover:bg-red-700 transition-colors">
+                            Close Report
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add event listeners for close buttons - use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                const closeBtn1 = modal.querySelector('#closeReportBtn');
+                const closeBtn2 = modal.querySelector('#closeReportBtn2');
+                
+                if (closeBtn1) {
+                    closeBtn1.addEventListener('click', () => {
+                        console.log('Close button 1 clicked');
+                        modal.remove();
+                    });
+                }
+                
+                if (closeBtn2) {
+                    closeBtn2.addEventListener('click', () => {
+                        console.log('Close button 2 clicked');
+                        modal.remove();
+                    });
+                }
+                
+                // Also close on background click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        console.log('Background clicked');
+                        modal.remove();
+                    }
+                });
+                
+                // Close on Escape key
+                const closeOnEscape = (e) => {
+                    if (e.key === 'Escape') {
+                        console.log('Escape key pressed');
+                        modal.remove();
+                        document.removeEventListener('keydown', closeOnEscape);
+                    }
+                };
+                document.addEventListener('keydown', closeOnEscape);
+                
+                console.log('Modal event listeners added');
+            }, 100);
+        }
+
+        // Helper function to group questions by topic
+        function groupQuestionsByTopic(questions) {
+            const grouped = {};
+            questions.forEach(q => {
+                q.topics.forEach(topic => {
+                    if (!grouped[topic]) grouped[topic] = [];
+                    grouped[topic].push(q);
+                });
+            });
+            return grouped;
+        }
+
+        // Show processing indicator
+        function showProcessing(message, details) {
+            document.getElementById('processingMessage').textContent = message;
+            document.getElementById('processingDetails').textContent = details;
+            document.getElementById('processingIndicator').classList.remove('hidden');
+            document.getElementById('processingIndicator').classList.add('flex');
+        }
+
+        // Hide processing indicator
+        function hideProcessing() {
+            document.getElementById('processingIndicator').classList.add('hidden');
+            document.getElementById('processingIndicator').classList.remove('flex');
+        }
     </script>
 </body>
 </html>
